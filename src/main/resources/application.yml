@@ -1,0 +1,44 @@
+server:
+  port: 8081
+spring:
+  application:
+    name: stream-demo
+  #rabbitmq连接配置
+  rabbitmq:
+    host: 127.0.0.1
+    port: 5672
+    username: admin
+    password: 123456
+  cloud:
+    stream:
+      bindings:
+        #消息生产者，与DelayDemoTopic接口中的DELAY_DEMO_PRODUCER变量值一致
+        delay-demo-producer:
+          #①定义交换机名
+          destination: demo-delay-queue
+        #消息消费者，与DelayDemoTopic接口中的DELAY_DEMO_CONSUMER变量值一致
+        delay-demo-consumer:
+          #定义交换机名，与①一致，就可以使发送和消费都指向一个队列
+          destination: demo-delay-queue
+          #分组，这个配置可以开启消息持久化、可以解决在集群环境下重复消费的问题。
+          #比如A、B两台服务器集群，如果没有这个配置，则A、B都能收到同样的消息，如果有该配置则只有其中一台会收到消息
+          group: delay-consumer-group
+          consumer:
+            #最大重试次数，默认为3。不使用默认的，这里定义为1，由我们程序控制发送时间和次数
+            maxAttempts: 1
+      rabbit:
+        bindings:
+          #消息生产者，与DelayDemoTopic接口中的DELAY_DEMO_PRODUCER变量值一致
+          delay-demo-producer:
+            producer:
+              #②申明为延迟队列
+              delayedExchange: true
+          #消息消费者，与DelayDemoTopic接口中的DELAY_DEMO_CONSUMER变量值一致
+          delay-demo-consumer:
+            consumer:
+              #申明为延迟队列，与②的配置的成对出现的
+              delayedExchange: true
+              #开启死信队列
+              autoBindDlq: true
+              #死信队列中消息的存活时间
+              dlqTtl: 60000
