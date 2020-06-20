@@ -58,7 +58,7 @@ public class DelayDemoTopicListener {
                 //将消息重新发送到延迟队列中
                 delayDemoTopic.delayDemoProducer().send(reMessage);
             }else {
-                //超过重试次数，做相关处理
+                //超过重试次数，做相关处理（比如保存数据库等操作），如果抛出异常，则会自动进入死信队列
                 throw new RuntimeException("超过最大重试次数：" + DelayConstant.X_RETRIES_TOTAL);
             }
         }
